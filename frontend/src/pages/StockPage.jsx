@@ -4,9 +4,40 @@ import { useAuth } from '../hooks/useAuth.js';
 import { useFetch } from '../hooks/useFetch.js';
 import { api } from '../services/api.js';
 import Pagination from '../components/Pagination.jsx';
+import Alert from '../components/ui/Alert.jsx';
+import Badge from '../components/ui/Badge.jsx';
+import Button from '../components/ui/Button.jsx';
+import ConfirmDialog from '../components/ui/ConfirmDialog.jsx';
+import EmptyState from '../components/ui/EmptyState.jsx';
+import Input from '../components/ui/Input.jsx';
+import PageHeader from '../components/ui/PageHeader.jsx';
+import Select from '../components/ui/Select.jsx';
+import { StatCardsSkeleton, TableSkeleton } from '../components/ui/Skeleton.jsx';
+import { PackageIcon, PlusIcon, SearchIcon } from '../components/ui/icons.jsx';
+import { formatNumber } from '../components/ui/format.js';
+import {
+    buttonClass,
+    tableShellClass,
+    tdClass,
+    thClass,
+    trClass,
+} from '../components/ui/styles.js';
 
 const POLLING_MS = 15000;
 const PAGE_SIZE = 10;
+// Placeholder decision: at or below this many units we show the "Bajo" badge.
+// Change it (or make it per-product) once the business defines a real rule.
+const LOW_STOCK_THRESHOLD = 5;
+
+function StockCell({ stock }) {
+    return (
+        <div className="flex items-center justify-end gap-2">
+            {stock === 0 && <Badge variant="danger">Sin stock</Badge>}
+            {stock > 0 && stock <= LOW_STOCK_THRESHOLD && <Badge variant="warning">Bajo</Badge>}
+            <span className="tabular-nums">{formatNumber(stock)}</span>
+        </div>
+    );
+}
 
 export default function StockPage() {
     const { isAdmin } = useAuth();
@@ -16,6 +47,8 @@ export default function StockPage() {
     const [category, setCategory] = useState('');
     const [page, setPage] = useState(1);
     const [actionError, setActionError] = useState('');
+    // Product waiting for the archive confirmation (null = dialog closed).
+    const [productToArchive, setProductToArchive] = useState(null);
 
     const params = new URLSearchParams({ page, limit: PAGE_SIZE });
     if (q) params.set('q', q);
@@ -47,10 +80,14 @@ export default function StockPage() {
         setPage(1);
     }
 
+    function clearFilters() {
+        setSearch('');
+        setQ('');
+        setCategory('');
+        setPage(1);
+    }
+
     async function handleArchive(product) {
-        if (!window.confirm(`¿Archivar el producto "${product.name}"?`)) {
-            return;
-        }
         setActionError('');
         try {
             await api(`/products/${product._id}`, { method: 'DELETE' });
@@ -64,147 +101,253 @@ export default function StockPage() {
         }
     }
 
+    function confirmArchive() {
+        const product = productToArchive;
+        setProductToArchive(null);
+        handleArchive(product);
+    }
+
     const categoryList = categories.data ?? [];
+    const hasFilters = q !== '' || category !== '';
+    const columnCount = isAdmin ? 5 : 4;
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold">Stock</h1>
+        <div>
+            <PageHeader title="Stock" subtitle="Inventario actual y totales por categoría.">
                 {isAdmin && (
-                    <Link
-                        to="/productos/nuevo"
-                        className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md"
-                    >
+                    <Link to="/productos/nuevo" className={buttonClass({ variant: 'primary' })}>
+                        <PlusIcon />
                         Nuevo producto
                     </Link>
                 )}
+            </PageHeader>
+
+            <div className="space-y-6">
+                {categories.error && (
+                    <Alert onRetry={reloadCategories}>
+                        No se pudieron cargar los totales por categoría: {categories.error.message}
+                    </Alert>
+                )}
+                {categories.loading && <StatCardsSkeleton />}
+                {categoryList.length > 0 && (
+                    <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                        {categoryList.map((c) => (
+                            <div
+                                key={c.category}
+                                className="min-w-0 rounded-lg border border-border bg-card p-4"
+                            >
+                                <p
+                                    className="truncate text-xs leading-4 text-muted-foreground"
+                                    title={c.category}
+                                >
+                                    {c.category}
+                                </p>
+                                <p className="mt-1 text-xl leading-7 font-semibold tabular-nums [overflow-wrap:anywhere]">
+                                    {formatNumber(c.totalStock)}
+                                </p>
+                                <p className="mt-1 text-xs leading-4 text-muted-foreground tabular-nums">
+                                    {formatNumber(c.products)}{' '}
+                                    {c.products === 1 ? 'producto' : 'productos'}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                <div className="space-y-4">
+                    <form onSubmit={handleSearch} className="flex flex-wrap gap-2">
+                        <div className="relative min-w-48 flex-1">
+                            <SearchIcon className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground" />
+                            <Input
+                                type="search"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                placeholder="Buscar por nombre o SKU"
+                                aria-label="Buscar"
+                                className="pl-9"
+                            />
+                        </div>
+                        <Select
+                            value={category}
+                            onChange={handleCategoryChange}
+                            aria-label="Categoría"
+                            className="w-full sm:w-52"
+                        >
+                            <option value="">Todas las categorías</option>
+                            {/* Keep the active filter visible even if its category is no longer listed */}
+                            {category && !categoryList.some((c) => c.category === category) && (
+                                <option value={category}>{category}</option>
+                            )}
+                            {categoryList.map((c) => (
+                                <option key={c.category} value={c.category}>
+                                    {c.category}
+                                </option>
+                            ))}
+                        </Select>
+                        <Button type="submit">Buscar</Button>
+                        {hasFilters && (
+                            <Button variant="ghost" onClick={clearFilters}>
+                                Limpiar filtros
+                            </Button>
+                        )}
+                    </form>
+
+                    {actionError && <Alert>{actionError}</Alert>}
+                    {products.error && (
+                        <Alert onRetry={reloadProducts}>{products.error.message}</Alert>
+                    )}
+
+                    {products.loading && (
+                        <TableSkeleton columns={columnCount} label="Cargando productos…" />
+                    )}
+
+                    {products.data && (
+                        <div className={tableShellClass}>
+                            {products.data.items.length === 0 ? (
+                                <EmptyState
+                                    icon={
+                                        hasFilters ? (
+                                            <SearchIcon size={18} />
+                                        ) : (
+                                            <PackageIcon size={18} />
+                                        )
+                                    }
+                                    title={
+                                        hasFilters ? 'Sin resultados' : 'Todavía no hay productos'
+                                    }
+                                    description={
+                                        hasFilters
+                                            ? 'Ningún producto coincide con la búsqueda o la categoría elegida.'
+                                            : isAdmin
+                                              ? 'Creá el primer producto para empezar a controlar el stock.'
+                                              : 'Un administrador debe cargar los primeros productos.'
+                                    }
+                                >
+                                    {hasFilters && (
+                                        <Button onClick={clearFilters}>Limpiar filtros</Button>
+                                    )}
+                                    {!hasFilters && isAdmin && (
+                                        <Link
+                                            to="/productos/nuevo"
+                                            className={buttonClass({ variant: 'secondary' })}
+                                        >
+                                            Nuevo producto
+                                        </Link>
+                                    )}
+                                </EmptyState>
+                            ) : (
+                                <>
+                                    <div
+                                        tabIndex={0}
+                                        role="region"
+                                        aria-label="Tabla de productos"
+                                        className="overflow-x-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+                                    >
+                                        <table className="w-full min-w-[640px] text-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th className={thClass}>SKU</th>
+                                                    <th className={thClass}>Nombre</th>
+                                                    <th className={thClass}>Categoría</th>
+                                                    <th className={`${thClass} text-right`}>
+                                                        Stock
+                                                    </th>
+                                                    {isAdmin && (
+                                                        <th className={`${thClass} text-right`}>
+                                                            Acciones
+                                                        </th>
+                                                    )}
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {products.data.items.map((p) => (
+                                                    <tr key={p._id} className={trClass}>
+                                                        <td className={tdClass}>
+                                                            <div
+                                                                className="max-w-32 truncate font-mono text-13 text-text-secondary"
+                                                                title={p.sku}
+                                                            >
+                                                                {p.sku}
+                                                            </div>
+                                                        </td>
+                                                        <td className={tdClass}>
+                                                            <div
+                                                                className="max-w-72 truncate"
+                                                                title={p.name}
+                                                            >
+                                                                {p.name}
+                                                            </div>
+                                                        </td>
+                                                        <td
+                                                            className={`${tdClass} text-text-secondary`}
+                                                        >
+                                                            <div
+                                                                className="max-w-40 truncate"
+                                                                title={p.category}
+                                                            >
+                                                                {p.category}
+                                                            </div>
+                                                        </td>
+                                                        <td className={tdClass}>
+                                                            <StockCell stock={p.stock} />
+                                                        </td>
+                                                        {isAdmin && (
+                                                            <td className={tdClass}>
+                                                                <div className="flex items-center justify-end gap-1">
+                                                                    <Link
+                                                                        to={`/productos/${p._id}/editar`}
+                                                                        aria-label={`Editar ${p.name}`}
+                                                                        className={buttonClass({
+                                                                            variant: 'ghost',
+                                                                            size: 'sm',
+                                                                        })}
+                                                                    >
+                                                                        Editar
+                                                                    </Link>
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="sm"
+                                                                        aria-label={`Archivar ${p.name}`}
+                                                                        onClick={() =>
+                                                                            setProductToArchive(p)
+                                                                        }
+                                                                    >
+                                                                        Archivar
+                                                                    </Button>
+                                                                </div>
+                                                            </td>
+                                                        )}
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <Pagination
+                                        page={products.data.page}
+                                        pages={products.data.pages}
+                                        total={products.data.total}
+                                        pageSize={PAGE_SIZE}
+                                        onChange={setPage}
+                                    />
+                                </>
+                            )}
+                        </div>
+                    )}
+                </div>
             </div>
 
-            {categories.error && (
-                <p className="text-sm text-destructive bg-destructive/10 p-2 rounded-md">
-                    No se pudieron cargar los totales por categoría: {categories.error.message}
-                </p>
-            )}
-            {categoryList.length > 0 && (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    {categoryList.map((c) => (
-                        <div
-                            key={c.category}
-                            className="bg-card text-card-foreground rounded-md shadow p-3"
-                        >
-                            <p className="text-sm text-muted-foreground">{c.category}</p>
-                            <p className="text-2xl font-bold">{c.totalStock}</p>
-                            <p className="text-xs text-muted-foreground">{c.products} productos</p>
-                        </div>
-                    ))}
-                </div>
-            )}
-
-            <form onSubmit={handleSearch} className="flex flex-wrap gap-2">
-                <input
-                    type="search"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Buscar por nombre o SKU"
-                    aria-label="Buscar"
-                    className="border border-input bg-background rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring flex-1 min-w-48"
-                />
-                <select
-                    value={category}
-                    onChange={handleCategoryChange}
-                    aria-label="Categoría"
-                    className="border border-input bg-background rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
-                >
-                    <option value="">Todas las categorías</option>
-                    {/* Keep the active filter visible even if its category is no longer listed */}
-                    {category && !categoryList.some((c) => c.category === category) && (
-                        <option value={category}>{category}</option>
-                    )}
-                    {categoryList.map((c) => (
-                        <option key={c.category} value={c.category}>
-                            {c.category}
-                        </option>
-                    ))}
-                </select>
-                <button
-                    type="submit"
-                    className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md"
-                >
-                    Buscar
-                </button>
-            </form>
-
-            {actionError && (
-                <p className="text-sm text-destructive bg-destructive/10 p-2 rounded-md">
-                    {actionError}
-                </p>
-            )}
-
-            {products.loading && <p className="text-muted-foreground">Cargando productos...</p>}
-            {products.error && (
-                <p className="text-sm text-destructive bg-destructive/10 p-2 rounded-md">
-                    {products.error.message}
-                </p>
-            )}
-
-            {products.data && (
-                <>
-                    {products.data.items.length === 0 ? (
-                        <p className="bg-card text-muted-foreground rounded-md shadow p-6 text-center">
-                            No hay productos para mostrar.
-                        </p>
-                    ) : (
-                        <div className="bg-card text-card-foreground rounded-md shadow overflow-x-auto">
-                            <table className="w-full text-sm text-left">
-                                <thead className="bg-muted text-muted-foreground">
-                                    <tr>
-                                        <th className="px-4 py-2">SKU</th>
-                                        <th className="px-4 py-2">Nombre</th>
-                                        <th className="px-4 py-2">Categoría</th>
-                                        <th className="px-4 py-2 text-right">Stock</th>
-                                        {isAdmin && (
-                                            <th className="px-4 py-2 text-right">Acciones</th>
-                                        )}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {products.data.items.map((p) => (
-                                        <tr key={p._id} className="border-t">
-                                            <td className="px-4 py-2 font-mono">{p.sku}</td>
-                                            <td className="px-4 py-2">{p.name}</td>
-                                            <td className="px-4 py-2">{p.category}</td>
-                                            <td className="px-4 py-2 text-right">{p.stock}</td>
-                                            {isAdmin && (
-                                                <td className="px-4 py-2 text-right space-x-3">
-                                                    <Link
-                                                        to={`/productos/${p._id}/editar`}
-                                                        className="text-primary underline"
-                                                    >
-                                                        Editar
-                                                    </Link>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleArchive(p)}
-                                                        className="text-destructive underline"
-                                                    >
-                                                        Archivar
-                                                    </button>
-                                                </td>
-                                            )}
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                    <Pagination
-                        page={products.data.page}
-                        pages={products.data.pages}
-                        total={products.data.total}
-                        onChange={setPage}
-                    />
-                </>
-            )}
+            <ConfirmDialog
+                open={productToArchive !== null}
+                title="Archivar producto"
+                description={
+                    productToArchive
+                        ? `"${productToArchive.name}" dejará de aparecer en el listado de stock y no se podrán registrar nuevos movimientos.`
+                        : ''
+                }
+                confirmLabel="Archivar"
+                onConfirm={confirmArchive}
+                onCancel={() => setProductToArchive(null)}
+            />
         </div>
     );
 }

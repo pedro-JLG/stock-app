@@ -1,8 +1,35 @@
 import { useState } from 'react';
 import { useFetch } from '../hooks/useFetch.js';
 import { api } from '../services/api.js';
+import Alert from '../components/ui/Alert.jsx';
+import Button from '../components/ui/Button.jsx';
+import EmptyState from '../components/ui/EmptyState.jsx';
 import FieldError from '../components/FieldError.jsx';
+import Field from '../components/ui/Field.jsx';
+import Input from '../components/ui/Input.jsx';
+import PageHeader from '../components/ui/PageHeader.jsx';
+import SegmentedControl from '../components/ui/SegmentedControl.jsx';
+import Select from '../components/ui/Select.jsx';
+import { FormSkeleton } from '../components/ui/Skeleton.jsx';
+import { ArrowDownLeftIcon, ArrowUpRightIcon, PackageIcon } from '../components/ui/icons.jsx';
+import { formatNumber } from '../components/ui/format.js';
+import { tableShellClass } from '../components/ui/styles.js';
 import { toFieldErrors } from '../utils/apiErrors.js';
+
+const TYPE_OPTIONS = [
+    {
+        value: 'in',
+        label: 'Ingreso',
+        icon: <ArrowDownLeftIcon size={14} />,
+        selectedIconClass: 'text-success',
+    },
+    {
+        value: 'out',
+        label: 'Salida',
+        icon: <ArrowUpRightIcon size={14} />,
+        selectedIconClass: 'text-foreground',
+    },
+];
 
 // Local date as YYYY-MM-DD (toISOString would give the UTC date).
 function todayLocal() {
@@ -74,156 +101,145 @@ export default function NewMovementPage() {
     }
 
     return (
-        <div className="space-y-4">
-            <h1 className="text-2xl font-bold">Registrar movimiento</h1>
+        <div>
+            <PageHeader
+                title="Registrar movimiento"
+                subtitle="Registrá un ingreso o una salida de stock."
+            />
 
-            {products.loading && <p className="text-muted-foreground">Cargando productos...</p>}
-            {products.error && (
-                <p className="text-sm text-destructive bg-destructive/10 p-2 rounded-md">
-                    {products.error.message}
-                </p>
-            )}
+            <div className="max-w-lg space-y-4">
+                {products.error && (
+                    <Alert onRetry={products.reload}>{products.error.message}</Alert>
+                )}
 
-            {products.data && products.data.items.length === 0 && (
-                <p className="bg-card text-muted-foreground rounded-md shadow p-6">
-                    No hay productos cargados. Un administrador debe crear al menos uno.
-                </p>
-            )}
+                {products.loading && <FormSkeleton fields={5} />}
 
-            {products.data && products.data.items.length > 0 && (
-                <form
-                    onSubmit={handleSubmit}
-                    className="max-w-lg bg-card text-card-foreground p-6 rounded-md shadow space-y-4"
-                >
-                    {result && (
-                        <p className="text-sm text-success bg-success/10 p-2 rounded-md">
-                            Movimiento registrado. Stock actual de {result.name}: {result.stock}
-                        </p>
-                    )}
-                    {error && (
-                        <p className="text-sm text-destructive bg-destructive/10 p-2 rounded-md">
-                            {error}
-                        </p>
-                    )}
-
-                    <div>
-                        <label htmlFor="product" className="block text-sm font-medium">
-                            Producto
-                        </label>
-                        <select
-                            id="product"
-                            name="product"
-                            value={form.product}
-                            onChange={handleChange}
-                            required
-                            className="mt-1 w-full border border-input bg-background rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
-                        >
-                            <option value="">Seleccioná un producto</option>
-                            {products.data.items.map((p) => (
-                                <option key={p._id} value={p._id}>
-                                    {p.name} ({p.sku}) - stock: {p.stock}
-                                </option>
-                            ))}
-                        </select>
-                        <FieldError message={fieldErrors.product} />
-                    </div>
-
-                    <div>
-                        <label htmlFor="type" className="block text-sm font-medium">
-                            Tipo
-                        </label>
-                        <select
-                            id="type"
-                            name="type"
-                            value={form.type}
-                            onChange={handleChange}
-                            className="mt-1 w-full border border-input bg-background rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
-                        >
-                            <option value="in">Ingreso</option>
-                            <option value="out">Salida</option>
-                        </select>
-                        <FieldError message={fieldErrors.type} />
-                    </div>
-
-                    <div>
-                        <label htmlFor="quantity" className="block text-sm font-medium">
-                            Cantidad
-                        </label>
-                        <input
-                            id="quantity"
-                            name="quantity"
-                            type="number"
-                            min={1}
-                            max={99999}
-                            step={1}
-                            value={form.quantity}
-                            onChange={handleChange}
-                            required
-                            className="mt-1 w-full border border-input bg-background rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
+                {products.data && products.data.items.length === 0 && (
+                    <div className={tableShellClass}>
+                        <EmptyState
+                            icon={<PackageIcon size={18} />}
+                            title="No hay productos cargados"
+                            description="Un administrador debe crear al menos uno antes de registrar movimientos."
                         />
-                        <FieldError message={fieldErrors.quantity} />
                     </div>
+                )}
 
-                    <div>
-                        <label htmlFor="occurredOn" className="block text-sm font-medium">
-                            Fecha
-                        </label>
-                        <input
-                            id="occurredOn"
-                            name="occurredOn"
-                            type="date"
-                            max={todayLocal()}
-                            value={form.occurredOn}
-                            onChange={handleChange}
-                            required
-                            className="mt-1 w-full border border-input bg-background rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
-                        />
-                        <FieldError message={fieldErrors.occurredOn} />
-                    </div>
-
-                    {form.type === 'in' ? (
-                        <div>
-                            <label htmlFor="supplier" className="block text-sm font-medium">
-                                Proveedor
-                            </label>
-                            <input
-                                id="supplier"
-                                name="supplier"
-                                value={form.supplier}
-                                onChange={handleChange}
-                                required
-                                maxLength={120}
-                                className="mt-1 w-full border border-input bg-background rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
-                            />
-                            <FieldError message={fieldErrors.supplier} />
-                        </div>
-                    ) : (
-                        <div>
-                            <label htmlFor="reason" className="block text-sm font-medium">
-                                Motivo
-                            </label>
-                            <input
-                                id="reason"
-                                name="reason"
-                                value={form.reason}
-                                onChange={handleChange}
-                                required
-                                maxLength={180}
-                                className="mt-1 w-full border border-input bg-background rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
-                            />
-                            <FieldError message={fieldErrors.reason} />
-                        </div>
-                    )}
-
-                    <button
-                        type="submit"
-                        disabled={submitting}
-                        className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md disabled:opacity-50"
+                {products.data && products.data.items.length > 0 && (
+                    <form
+                        onSubmit={handleSubmit}
+                        className="space-y-5 rounded-lg border border-border bg-card p-6"
                     >
-                        {submitting ? 'Registrando...' : 'Registrar'}
-                    </button>
-                </form>
-            )}
+                        {/* Always mounted so screen readers announce the content change. */}
+                        <div role="status" aria-live="polite">
+                            {result && (
+                                <Alert variant="success" silent>
+                                    Movimiento registrado. Stock actual de {result.name}:{' '}
+                                    <span className="tabular-nums">
+                                        {formatNumber(result.stock)}
+                                    </span>
+                                </Alert>
+                            )}
+                        </div>
+                        {error && <Alert>{error}</Alert>}
+
+                        <Field id="product" label="Producto" error={fieldErrors.product}>
+                            <Select
+                                id="product"
+                                name="product"
+                                value={form.product}
+                                onChange={handleChange}
+                                required
+                                error={fieldErrors.product}
+                            >
+                                <option value="">Seleccioná un producto</option>
+                                {products.data.items.map((p) => (
+                                    <option key={p._id} value={p._id}>
+                                        {p.name} ({p.sku}) - stock: {p.stock}
+                                    </option>
+                                ))}
+                            </Select>
+                        </Field>
+
+                        <div>
+                            <SegmentedControl
+                                name="type"
+                                label="Tipo"
+                                value={form.type}
+                                onChange={handleChange}
+                                options={TYPE_OPTIONS}
+                                invalid={Boolean(fieldErrors.type)}
+                                describedBy={fieldErrors.type ? 'type-error' : undefined}
+                            />
+                            <FieldError id="type-error" message={fieldErrors.type} />
+                        </div>
+
+                        <div className="grid gap-5 sm:grid-cols-2">
+                            <Field id="quantity" label="Cantidad" error={fieldErrors.quantity}>
+                                <Input
+                                    id="quantity"
+                                    name="quantity"
+                                    type="number"
+                                    inputMode="numeric"
+                                    min={1}
+                                    max={99999}
+                                    step={1}
+                                    value={form.quantity}
+                                    onChange={handleChange}
+                                    required
+                                    error={fieldErrors.quantity}
+                                    className="tabular-nums"
+                                />
+                            </Field>
+
+                            <Field id="occurredOn" label="Fecha" error={fieldErrors.occurredOn}>
+                                <Input
+                                    id="occurredOn"
+                                    name="occurredOn"
+                                    type="date"
+                                    max={todayLocal()}
+                                    value={form.occurredOn}
+                                    onChange={handleChange}
+                                    required
+                                    error={fieldErrors.occurredOn}
+                                    className="tabular-nums"
+                                />
+                            </Field>
+                        </div>
+
+                        {form.type === 'in' ? (
+                            <Field id="supplier" label="Proveedor" error={fieldErrors.supplier}>
+                                <Input
+                                    id="supplier"
+                                    name="supplier"
+                                    value={form.supplier}
+                                    onChange={handleChange}
+                                    required
+                                    maxLength={120}
+                                    error={fieldErrors.supplier}
+                                />
+                            </Field>
+                        ) : (
+                            <Field id="reason" label="Motivo" error={fieldErrors.reason}>
+                                <Input
+                                    id="reason"
+                                    name="reason"
+                                    value={form.reason}
+                                    onChange={handleChange}
+                                    required
+                                    maxLength={180}
+                                    error={fieldErrors.reason}
+                                />
+                            </Field>
+                        )}
+
+                        <div className="pt-1">
+                            <Button type="submit" variant="primary" disabled={submitting}>
+                                {submitting ? 'Registrando...' : 'Registrar'}
+                            </Button>
+                        </div>
+                    </form>
+                )}
+            </div>
         </div>
     );
 }

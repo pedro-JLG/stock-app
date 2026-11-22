@@ -1,6 +1,12 @@
 import { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router';
 import { useAuth } from '../hooks/useAuth.js';
+import Alert from '../components/ui/Alert.jsx';
+import Button from '../components/ui/Button.jsx';
+import Field from '../components/ui/Field.jsx';
+import Input from '../components/ui/Input.jsx';
+import Logo from '../components/ui/Logo.jsx';
+import { linkClass } from '../components/ui/styles.js';
 
 export default function LoginPage() {
     const { user, login } = useAuth();
@@ -30,62 +36,58 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-muted">
+        <main className="flex min-h-screen flex-col items-center justify-center bg-background px-4 py-8">
+            <div className="mb-6">
+                <Logo size={32} />
+            </div>
             <form
                 onSubmit={handleSubmit}
-                className="w-full max-w-sm bg-card text-card-foreground p-6 rounded-lg shadow space-y-4"
+                className="w-[360px] max-w-full space-y-5 rounded-xl border border-border bg-card p-6"
             >
-                <h1 className="text-2xl font-bold">Iniciar sesión</h1>
-
-                {error && (
-                    <p className="text-sm text-destructive bg-destructive/10 p-2 rounded-md">
-                        {error}
-                    </p>
-                )}
-
                 <div>
-                    <label htmlFor="email" className="block text-sm font-medium">
-                        Email
-                    </label>
-                    <input
+                    <h1 className="text-xl leading-7 font-semibold tracking-[-0.02em]">
+                        Iniciar sesión
+                    </h1>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                        Ingresá con tu cuenta para ver el stock.
+                    </p>
+                </div>
+
+                {error && <Alert>{error}</Alert>}
+
+                <Field id="email" label="Email">
+                    <Input
                         id="email"
                         type="email"
+                        autoComplete="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
-                        className="mt-1 w-full border border-input bg-background rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
                     />
-                </div>
+                </Field>
 
-                <div>
-                    <label htmlFor="password" className="block text-sm font-medium">
-                        Contraseña
-                    </label>
-                    <input
+                <Field id="password" label="Contraseña">
+                    <Input
                         id="password"
                         type="password"
+                        autoComplete="current-password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
-                        className="mt-1 w-full border border-input bg-background rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
                     />
-                </div>
+                </Field>
 
-                <button
-                    type="submit"
-                    disabled={submitting}
-                    className="w-full bg-primary text-primary-foreground hover:bg-primary/90 py-2 rounded-md disabled:opacity-50"
-                >
+                <Button type="submit" variant="primary" disabled={submitting} className="w-full">
                     {submitting ? 'Ingresando...' : 'Ingresar'}
-                </button>
+                </Button>
 
-                <p className="text-sm text-center">
+                <p className="text-center text-sm text-muted-foreground">
                     ¿No tenés cuenta?{' '}
-                    <Link to="/registro" className="text-primary underline">
+                    <Link to="/registro" className={linkClass}>
                         Registrate
                     </Link>
                 </p>
             </form>
-        </div>
+        </main>
     );
 }

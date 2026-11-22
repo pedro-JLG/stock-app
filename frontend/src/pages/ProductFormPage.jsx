@@ -2,7 +2,14 @@ import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { useFetch } from '../hooks/useFetch.js';
 import { api } from '../services/api.js';
-import FieldError from '../components/FieldError.jsx';
+import Alert from '../components/ui/Alert.jsx';
+import Button from '../components/ui/Button.jsx';
+import Field from '../components/ui/Field.jsx';
+import Input from '../components/ui/Input.jsx';
+import PageHeader from '../components/ui/PageHeader.jsx';
+import { FormSkeleton } from '../components/ui/Skeleton.jsx';
+import Textarea from '../components/ui/Textarea.jsx';
+import { buttonClass } from '../components/ui/styles.js';
 import { toFieldErrors } from '../utils/apiErrors.js';
 
 const EMPTY_PRODUCT = { name: '', description: '', sku: '', category: '' };
@@ -41,88 +48,66 @@ function ProductForm({ id, initial }) {
     return (
         <form
             onSubmit={handleSubmit}
-            className="max-w-lg bg-card text-card-foreground p-6 rounded-md shadow space-y-4"
+            className="max-w-lg space-y-5 rounded-lg border border-border bg-card p-6"
         >
-            {error && (
-                <p className="text-sm text-destructive bg-destructive/10 p-2 rounded-md">{error}</p>
-            )}
+            {error && <Alert>{error}</Alert>}
 
-            <div>
-                <label htmlFor="name" className="block text-sm font-medium">
-                    Nombre
-                </label>
-                <input
+            <Field id="name" label="Nombre" error={fieldErrors.name}>
+                <Input
                     id="name"
                     name="name"
                     value={form.name}
                     onChange={handleChange}
                     required
                     maxLength={120}
-                    className="mt-1 w-full border border-input bg-background rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
+                    error={fieldErrors.name}
                 />
-                <FieldError message={fieldErrors.name} />
-            </div>
+            </Field>
 
-            <div>
-                <label htmlFor="description" className="block text-sm font-medium">
-                    Descripción
-                </label>
-                <textarea
+            <Field id="description" label="Descripción" error={fieldErrors.description}>
+                <Textarea
                     id="description"
                     name="description"
                     value={form.description}
                     onChange={handleChange}
                     maxLength={1000}
                     rows={3}
-                    className="mt-1 w-full border border-input bg-background rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
+                    error={fieldErrors.description}
                 />
-                <FieldError message={fieldErrors.description} />
+            </Field>
+
+            <div className="grid gap-5 sm:grid-cols-2">
+                <Field id="sku" label="SKU" error={fieldErrors.sku}>
+                    <Input
+                        id="sku"
+                        name="sku"
+                        value={form.sku}
+                        onChange={handleChange}
+                        required
+                        maxLength={40}
+                        error={fieldErrors.sku}
+                        className="font-mono text-13"
+                    />
+                </Field>
+
+                <Field id="category" label="Categoría" error={fieldErrors.category}>
+                    <Input
+                        id="category"
+                        name="category"
+                        value={form.category}
+                        onChange={handleChange}
+                        required
+                        maxLength={80}
+                        error={fieldErrors.category}
+                    />
+                </Field>
             </div>
 
-            <div>
-                <label htmlFor="sku" className="block text-sm font-medium">
-                    SKU
-                </label>
-                <input
-                    id="sku"
-                    name="sku"
-                    value={form.sku}
-                    onChange={handleChange}
-                    required
-                    maxLength={40}
-                    className="mt-1 w-full border border-input bg-background rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
-                />
-                <FieldError message={fieldErrors.sku} />
-            </div>
-
-            <div>
-                <label htmlFor="category" className="block text-sm font-medium">
-                    Categoría
-                </label>
-                <input
-                    id="category"
-                    name="category"
-                    value={form.category}
-                    onChange={handleChange}
-                    required
-                    maxLength={80}
-                    className="mt-1 w-full border border-input bg-background rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
-                />
-                <FieldError message={fieldErrors.category} />
-            </div>
-
-            <div className="flex gap-3">
-                <button
-                    type="submit"
-                    disabled={submitting}
-                    className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md disabled:opacity-50"
-                >
+            <div className="flex gap-2 pt-1">
+                <Button type="submit" variant="primary" disabled={submitting}>
                     {submitting ? 'Guardando...' : 'Guardar'}
-                </button>
-                <Link
-                    to="/"
-                    className="px-4 py-2 border rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80"
-                >
+                </Button>
+                <Link to="/" className={buttonClass({ variant: 'ghost' })}>
                     Cancelar
                 </Link>
             </div>
@@ -132,31 +117,38 @@ function ProductForm({ id, initial }) {
 
 export default function ProductFormPage() {
     const { id } = useParams();
-    const { data, error, loading } = useFetch(id ? `/products/${id}` : null);
+    const { data, error, loading, reload } = useFetch(id ? `/products/${id}` : null);
 
     return (
-        <div className="space-y-4">
-            <h1 className="text-2xl font-bold">{id ? 'Editar producto' : 'Nuevo producto'}</h1>
+        <div>
+            <PageHeader
+                title={id ? 'Editar producto' : 'Nuevo producto'}
+                subtitle={
+                    id ? 'Actualizá los datos del producto.' : 'Completá los datos del producto.'
+                }
+            />
 
-            {loading && <p className="text-muted-foreground">Cargando producto...</p>}
-            {error && (
-                <p className="text-sm text-destructive bg-destructive/10 p-2 rounded-md">
-                    {error.message}
-                </p>
-            )}
+            <div className="space-y-4">
+                {loading && <FormSkeleton fields={4} />}
+                {error && (
+                    <div className="max-w-lg">
+                        <Alert onRetry={reload}>{error.message}</Alert>
+                    </div>
+                )}
 
-            {!id && <ProductForm initial={EMPTY_PRODUCT} />}
-            {id && data && (
-                <ProductForm
-                    id={id}
-                    initial={{
-                        name: data.name,
-                        description: data.description ?? '',
-                        sku: data.sku,
-                        category: data.category,
-                    }}
-                />
-            )}
+                {!id && <ProductForm initial={EMPTY_PRODUCT} />}
+                {id && data && (
+                    <ProductForm
+                        id={id}
+                        initial={{
+                            name: data.name,
+                            description: data.description ?? '',
+                            sku: data.sku,
+                            category: data.category,
+                        }}
+                    />
+                )}
+            </div>
         </div>
     );
 }
