@@ -85,6 +85,18 @@ describe('POST /api/movements', () => {
         expect(res.status).toBe(400);
     });
 
+    test('accepts today but rejects tomorrow', async () => {
+        const product = await createProduct();
+        const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
+        const body = { product: product._id, type: 'in', quantity: 1, supplier: 'ACME' };
+
+        const todayRes = await postMovement({ ...body, occurredOn: today });
+        const tomorrowRes = await postMovement({ ...body, occurredOn: tomorrow });
+
+        expect(todayRes.status).toBe(201);
+        expect(tomorrowRes.status).toBe(400);
+    });
+
     test('returns 404 for an archived product', async () => {
         const product = await Product.create({
             name: 'Old', sku: 'OLD-1', category: 'Hardware', deletedAt: new Date(),
@@ -139,5 +151,22 @@ describe('GET /api/movements', () => {
         expect(res.body.total).toBe(1);
         expect(res.body.items[0].product.name).toBe('Screw');
         expect(res.body.items[0].user.name).toBe('Ana');
+    });
+
+    test('filters by product and date range', async () => {
+        const first = await createProduct(10);
+        const second = await Product.create({ name: 'Nut', sku: 'NUT-1', category: 'Hardware', stock: 10 });
+
+        await postMovement({ product: first._id, type: 'in', quantity: 1, occurredOn: '2024-01-10', supplier: 'ACME' });
+        await postMovement({ product: first._id, type: 'in', quantity: 1, occurredOn: '2024-03-10', supplier: 'ACME' });
+        await postMovement({ product: second._id, type: 'in', quantity: 1, occurredOn: '2024-03-10', supplier: 'ACME' });
+
+        const byProduct = await request(app).get(`/api/movements?product=${first._id}`).set('Authorization', auth);
+        const byDate = await request(app)
+            .get(`/api/movements?product=${first._id}&from=2024-02-01&to=2024-04-01`)
+            .set('Authorization', auth);
+
+        expect(byProduct.body.total).toBe(2);
+        expect(byDate.body.total).toBe(1);
     });
 });
