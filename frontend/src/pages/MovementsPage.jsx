@@ -40,7 +40,7 @@ export default function MovementsPage() {
         <div className="space-y-4">
             <h1 className="text-2xl font-bold">Movimientos</h1>
 
-            <div className="flex flex-wrap items-end gap-3 bg-white p-4 rounded shadow">
+            <div className="flex flex-wrap items-end gap-3 bg-card text-card-foreground p-4 rounded-md shadow">
                 <div>
                     <label htmlFor="type" className="block text-sm font-medium">
                         Tipo
@@ -50,7 +50,7 @@ export default function MovementsPage() {
                         name="type"
                         value={filters.type}
                         onChange={handleFilterChange}
-                        className="mt-1 border rounded px-3 py-2"
+                        className="mt-1 border border-input bg-background rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
                     >
                         <option value="">Todos</option>
                         <option value="in">Ingreso</option>
@@ -66,7 +66,7 @@ export default function MovementsPage() {
                         name="product"
                         value={filters.product}
                         onChange={handleFilterChange}
-                        className="mt-1 border rounded px-3 py-2"
+                        className="mt-1 border border-input bg-background rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
                     >
                         <option value="">Todos</option>
                         {products.data?.items.map((p) => (
@@ -86,7 +86,7 @@ export default function MovementsPage() {
                         type="date"
                         value={filters.from}
                         onChange={handleFilterChange}
-                        className="mt-1 border rounded px-3 py-2"
+                        className="mt-1 border border-input bg-background rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
                     />
                 </div>
                 <div>
@@ -99,17 +99,21 @@ export default function MovementsPage() {
                         type="date"
                         value={filters.to}
                         onChange={handleFilterChange}
-                        className="mt-1 border rounded px-3 py-2"
+                        className="mt-1 border border-input bg-background rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
                     />
                 </div>
-                <button type="button" onClick={clearFilters} className="px-3 py-2 border rounded">
+                <button
+                    type="button"
+                    onClick={clearFilters}
+                    className="px-3 py-2 border rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                >
                     Limpiar filtros
                 </button>
             </div>
 
-            {movements.loading && <p className="text-slate-500">Cargando movimientos...</p>}
+            {movements.loading && <p className="text-muted-foreground">Cargando movimientos...</p>}
             {movements.error && (
-                <p className="text-sm text-red-600 bg-red-50 p-2 rounded">
+                <p className="text-sm text-destructive bg-destructive/10 p-2 rounded-md">
                     {movements.error.message}
                 </p>
             )}
@@ -117,13 +121,13 @@ export default function MovementsPage() {
             {movements.data && (
                 <>
                     {movements.data.items.length === 0 ? (
-                        <p className="text-slate-500 bg-white rounded shadow p-6 text-center">
+                        <p className="bg-card text-muted-foreground rounded-md shadow p-6 text-center">
                             No hay movimientos para mostrar.
                         </p>
                     ) : (
-                        <div className="bg-white rounded shadow overflow-x-auto">
+                        <div className="bg-card text-card-foreground rounded-md shadow overflow-x-auto">
                             <table className="w-full text-sm text-left">
-                                <thead className="bg-slate-50 text-slate-600">
+                                <thead className="bg-muted text-muted-foreground">
                                     <tr>
                                         <th className="px-4 py-2">Fecha</th>
                                         <th className="px-4 py-2">Tipo</th>

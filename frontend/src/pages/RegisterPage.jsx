@@ -37,14 +37,18 @@ export default function RegisterPage() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="min-h-screen flex items-center justify-center bg-muted">
             <form
                 onSubmit={handleSubmit}
-                className="w-full max-w-sm bg-white p-6 rounded-lg shadow space-y-4"
+                className="w-full max-w-sm bg-card text-card-foreground p-6 rounded-lg shadow space-y-4"
             >
                 <h1 className="text-2xl font-bold">Crear cuenta</h1>
 
-                {error && <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{error}</p>}
+                {error && (
+                    <p className="text-sm text-destructive bg-destructive/10 p-2 rounded-md">
+                        {error}
+                    </p>
+                )}
 
                 <div>
                     <label htmlFor="name" className="block text-sm font-medium">
@@ -56,7 +60,7 @@ export default function RegisterPage() {
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         required
-                        className="mt-1 w-full border rounded px-3 py-2"
+                        className="mt-1 w-full border border-input bg-background rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
                     />
                     <FieldError message={fieldErrors.name} />
                 </div>
@@ -71,7 +75,7 @@ export default function RegisterPage() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
-                        className="mt-1 w-full border rounded px-3 py-2"
+                        className="mt-1 w-full border border-input bg-background rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
                     />
                     <FieldError message={fieldErrors.email} />
                 </div>
@@ -87,7 +91,7 @@ export default function RegisterPage() {
                         onChange={(e) => setPassword(e.target.value)}
                         required
                         minLength={8}
-                        className="mt-1 w-full border rounded px-3 py-2"
+                        className="mt-1 w-full border border-input bg-background rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
                     />
                     <FieldError message={fieldErrors.password} />
                 </div>
@@ -95,14 +99,14 @@ export default function RegisterPage() {
                 <button
                     type="submit"
                     disabled={submitting}
-                    className="w-full bg-blue-600 text-white py-2 rounded disabled:opacity-50"
+                    className="w-full bg-primary text-primary-foreground hover:bg-primary/90 py-2 rounded-md disabled:opacity-50"
                 >
                     {submitting ? 'Creando cuenta...' : 'Registrarme'}
                 </button>
 
                 <p className="text-sm text-center">
                     ¿Ya tenés cuenta?{' '}
-                    <Link to="/login" className="text-blue-600 underline">
+                    <Link to="/login" className="text-primary underline">
                         Iniciá sesión
                     </Link>
                 </p>

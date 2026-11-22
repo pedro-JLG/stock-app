@@ -77,15 +77,15 @@ export default function NewMovementPage() {
         <div className="space-y-4">
             <h1 className="text-2xl font-bold">Registrar movimiento</h1>
 
-            {products.loading && <p className="text-slate-500">Cargando productos...</p>}
+            {products.loading && <p className="text-muted-foreground">Cargando productos...</p>}
             {products.error && (
-                <p className="text-sm text-red-600 bg-red-50 p-2 rounded">
+                <p className="text-sm text-destructive bg-destructive/10 p-2 rounded-md">
                     {products.error.message}
                 </p>
             )}
 
             {products.data && products.data.items.length === 0 && (
-                <p className="text-slate-500 bg-white rounded shadow p-6">
+                <p className="bg-card text-muted-foreground rounded-md shadow p-6">
                     No hay productos cargados. Un administrador debe crear al menos uno.
                 </p>
             )}
@@ -93,14 +93,18 @@ export default function NewMovementPage() {
             {products.data && products.data.items.length > 0 && (
                 <form
                     onSubmit={handleSubmit}
-                    className="max-w-lg bg-white p-6 rounded shadow space-y-4"
+                    className="max-w-lg bg-card text-card-foreground p-6 rounded-md shadow space-y-4"
                 >
                     {result && (
-                        <p className="text-sm text-green-700 bg-green-50 p-2 rounded">
+                        <p className="text-sm text-success bg-success/10 p-2 rounded-md">
                             Movimiento registrado. Stock actual de {result.name}: {result.stock}
                         </p>
                     )}
-                    {error && <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{error}</p>}
+                    {error && (
+                        <p className="text-sm text-destructive bg-destructive/10 p-2 rounded-md">
+                            {error}
+                        </p>
+                    )}
 
                     <div>
                         <label htmlFor="product" className="block text-sm font-medium">
@@ -112,7 +116,7 @@ export default function NewMovementPage() {
                             value={form.product}
                             onChange={handleChange}
                             required
-                            className="mt-1 w-full border rounded px-3 py-2"
+                            className="mt-1 w-full border border-input bg-background rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
                         >
                             <option value="">Seleccioná un producto</option>
                             {products.data.items.map((p) => (
@@ -133,7 +137,7 @@ export default function NewMovementPage() {
                             name="type"
                             value={form.type}
                             onChange={handleChange}
-                            className="mt-1 w-full border rounded px-3 py-2"
+                            className="mt-1 w-full border border-input bg-background rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
                         >
                             <option value="in">Ingreso</option>
                             <option value="out">Salida</option>
@@ -155,7 +159,7 @@ export default function NewMovementPage() {
                             value={form.quantity}
                             onChange={handleChange}
                             required
-                            className="mt-1 w-full border rounded px-3 py-2"
+                            className="mt-1 w-full border border-input bg-background rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
                         />
                         <FieldError message={fieldErrors.quantity} />
                     </div>
@@ -172,7 +176,7 @@ export default function NewMovementPage() {
                             value={form.occurredOn}
                             onChange={handleChange}
                             required
-                            className="mt-1 w-full border rounded px-3 py-2"
+                            className="mt-1 w-full border border-input bg-background rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
                         />
                         <FieldError message={fieldErrors.occurredOn} />
                     </div>
@@ -189,7 +193,7 @@ export default function NewMovementPage() {
                                 onChange={handleChange}
                                 required
                                 maxLength={120}
-                                className="mt-1 w-full border rounded px-3 py-2"
+                                className="mt-1 w-full border border-input bg-background rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
                             />
                             <FieldError message={fieldErrors.supplier} />
                         </div>
@@ -205,7 +209,7 @@ export default function NewMovementPage() {
                                 onChange={handleChange}
                                 required
                                 maxLength={180}
-                                className="mt-1 w-full border rounded px-3 py-2"
+                                className="mt-1 w-full border border-input bg-background rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
                             />
                             <FieldError message={fieldErrors.reason} />
                         </div>
@@ -214,7 +218,7 @@ export default function NewMovementPage() {
                     <button
                         type="submit"
                         disabled={submitting}
-                        className="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50"
+                        className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md disabled:opacity-50"
                     >
                         {submitting ? 'Registrando...' : 'Registrar'}
                     </button>

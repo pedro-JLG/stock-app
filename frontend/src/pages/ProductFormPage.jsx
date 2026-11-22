@@ -39,8 +39,13 @@ function ProductForm({ id, initial }) {
     }
 
     return (
-        <form onSubmit={handleSubmit} className="max-w-lg bg-white p-6 rounded shadow space-y-4">
-            {error && <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{error}</p>}
+        <form
+            onSubmit={handleSubmit}
+            className="max-w-lg bg-card text-card-foreground p-6 rounded-md shadow space-y-4"
+        >
+            {error && (
+                <p className="text-sm text-destructive bg-destructive/10 p-2 rounded-md">{error}</p>
+            )}
 
             <div>
                 <label htmlFor="name" className="block text-sm font-medium">
@@ -53,7 +58,7 @@ function ProductForm({ id, initial }) {
                     onChange={handleChange}
                     required
                     maxLength={120}
-                    className="mt-1 w-full border rounded px-3 py-2"
+                    className="mt-1 w-full border border-input bg-background rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
                 />
                 <FieldError message={fieldErrors.name} />
             </div>
@@ -69,7 +74,7 @@ function ProductForm({ id, initial }) {
                     onChange={handleChange}
                     maxLength={1000}
                     rows={3}
-                    className="mt-1 w-full border rounded px-3 py-2"
+                    className="mt-1 w-full border border-input bg-background rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
                 />
                 <FieldError message={fieldErrors.description} />
             </div>
@@ -85,7 +90,7 @@ function ProductForm({ id, initial }) {
                     onChange={handleChange}
                     required
                     maxLength={40}
-                    className="mt-1 w-full border rounded px-3 py-2"
+                    className="mt-1 w-full border border-input bg-background rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
                 />
                 <FieldError message={fieldErrors.sku} />
             </div>
@@ -101,7 +106,7 @@ function ProductForm({ id, initial }) {
                     onChange={handleChange}
                     required
                     maxLength={80}
-                    className="mt-1 w-full border rounded px-3 py-2"
+                    className="mt-1 w-full border border-input bg-background rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
                 />
                 <FieldError message={fieldErrors.category} />
             </div>
@@ -110,11 +115,14 @@ function ProductForm({ id, initial }) {
                 <button
                     type="submit"
                     disabled={submitting}
-                    className="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50"
+                    className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md disabled:opacity-50"
                 >
                     {submitting ? 'Guardando...' : 'Guardar'}
                 </button>
-                <Link to="/" className="px-4 py-2 border rounded bg-white">
+                <Link
+                    to="/"
+                    className="px-4 py-2 border rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                >
                     Cancelar
                 </Link>
             </div>
@@ -130,8 +138,12 @@ export default function ProductFormPage() {
         <div className="space-y-4">
             <h1 className="text-2xl font-bold">{id ? 'Editar producto' : 'Nuevo producto'}</h1>
 
-            {loading && <p className="text-slate-500">Cargando producto...</p>}
-            {error && <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{error.message}</p>}
+            {loading && <p className="text-muted-foreground">Cargando producto...</p>}
+            {error && (
+                <p className="text-sm text-destructive bg-destructive/10 p-2 rounded-md">
+                    {error.message}
+                </p>
+            )}
 
             {!id && <ProductForm initial={EMPTY_PRODUCT} />}
             {id && data && (

@@ -73,7 +73,7 @@ export default function StockPage() {
                 {isAdmin && (
                     <Link
                         to="/productos/nuevo"
-                        className="bg-blue-600 text-white px-4 py-2 rounded"
+                        className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md"
                     >
                         Nuevo producto
                     </Link>
@@ -81,17 +81,20 @@ export default function StockPage() {
             </div>
 
             {categories.error && (
-                <p className="text-sm text-red-600 bg-red-50 p-2 rounded">
+                <p className="text-sm text-destructive bg-destructive/10 p-2 rounded-md">
                     No se pudieron cargar los totales por categoría: {categories.error.message}
                 </p>
             )}
             {categoryList.length > 0 && (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {categoryList.map((c) => (
-                        <div key={c.category} className="bg-white rounded shadow p-3">
-                            <p className="text-sm text-slate-500">{c.category}</p>
+                        <div
+                            key={c.category}
+                            className="bg-card text-card-foreground rounded-md shadow p-3"
+                        >
+                            <p className="text-sm text-muted-foreground">{c.category}</p>
                             <p className="text-2xl font-bold">{c.totalStock}</p>
-                            <p className="text-xs text-slate-500">{c.products} productos</p>
+                            <p className="text-xs text-muted-foreground">{c.products} productos</p>
                         </div>
                     ))}
                 </div>
@@ -104,13 +107,13 @@ export default function StockPage() {
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Buscar por nombre o SKU"
                     aria-label="Buscar"
-                    className="border rounded px-3 py-2 bg-white flex-1 min-w-48"
+                    className="border border-input bg-background rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring flex-1 min-w-48"
                 />
                 <select
                     value={category}
                     onChange={handleCategoryChange}
                     aria-label="Categoría"
-                    className="border rounded px-3 py-2 bg-white"
+                    className="border border-input bg-background rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
                 >
                     <option value="">Todas las categorías</option>
                     {/* Keep the active filter visible even if its category is no longer listed */}
@@ -123,18 +126,23 @@ export default function StockPage() {
                         </option>
                     ))}
                 </select>
-                <button type="submit" className="bg-slate-800 text-white px-4 py-2 rounded">
+                <button
+                    type="submit"
+                    className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md"
+                >
                     Buscar
                 </button>
             </form>
 
             {actionError && (
-                <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{actionError}</p>
+                <p className="text-sm text-destructive bg-destructive/10 p-2 rounded-md">
+                    {actionError}
+                </p>
             )}
 
-            {products.loading && <p className="text-slate-500">Cargando productos...</p>}
+            {products.loading && <p className="text-muted-foreground">Cargando productos...</p>}
             {products.error && (
-                <p className="text-sm text-red-600 bg-red-50 p-2 rounded">
+                <p className="text-sm text-destructive bg-destructive/10 p-2 rounded-md">
                     {products.error.message}
                 </p>
             )}
@@ -142,13 +150,13 @@ export default function StockPage() {
             {products.data && (
                 <>
                     {products.data.items.length === 0 ? (
-                        <p className="text-slate-500 bg-white rounded shadow p-6 text-center">
+                        <p className="bg-card text-muted-foreground rounded-md shadow p-6 text-center">
                             No hay productos para mostrar.
                         </p>
                     ) : (
-                        <div className="bg-white rounded shadow overflow-x-auto">
+                        <div className="bg-card text-card-foreground rounded-md shadow overflow-x-auto">
                             <table className="w-full text-sm text-left">
-                                <thead className="bg-slate-50 text-slate-600">
+                                <thead className="bg-muted text-muted-foreground">
                                     <tr>
                                         <th className="px-4 py-2">SKU</th>
                                         <th className="px-4 py-2">Nombre</th>
@@ -170,14 +178,14 @@ export default function StockPage() {
                                                 <td className="px-4 py-2 text-right space-x-3">
                                                     <Link
                                                         to={`/productos/${p._id}/editar`}
-                                                        className="text-blue-600 underline"
+                                                        className="text-primary underline"
                                                     >
                                                         Editar
                                                     </Link>
                                                     <button
                                                         type="button"
                                                         onClick={() => handleArchive(p)}
-                                                        className="text-red-600 underline"
+                                                        className="text-destructive underline"
                                                     >
                                                         Archivar
                                                     </button>

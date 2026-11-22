@@ -7,15 +7,17 @@ const ROLE_LABELS = {
 };
 
 function linkClass({ isActive }) {
-    return isActive ? 'font-semibold text-blue-600' : 'text-slate-600 hover:text-slate-900';
+    return isActive
+        ? 'font-semibold text-foreground'
+        : 'text-muted-foreground hover:text-foreground';
 }
 
 export default function Layout() {
     const { user, logout } = useAuth();
 
     return (
-        <div className="min-h-screen bg-gray-100">
-            <header className="bg-white shadow">
+        <div className="min-h-screen bg-muted">
+            <header className="bg-card text-card-foreground shadow">
                 <nav className="max-w-5xl mx-auto px-4 py-3 flex flex-wrap items-center gap-4">
                     <NavLink to="/" end className={linkClass}>
                         Stock
@@ -30,11 +32,15 @@ export default function Layout() {
                     <div className="ml-auto flex items-center gap-3 text-sm">
                         <span>
                             {user.name}{' '}
-                            <span className="text-slate-500">
+                            <span className="text-muted-foreground">
                                 ({ROLE_LABELS[user.role] ?? user.role})
                             </span>
                         </span>
-                        <button type="button" onClick={logout} className="px-3 py-1 border rounded">
+                        <button
+                            type="button"
+                            onClick={logout}
+                            className="px-3 py-1 border rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                        >
                             Salir
                         </button>
                     </div>
