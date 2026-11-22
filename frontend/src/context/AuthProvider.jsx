@@ -10,16 +10,46 @@ export function AuthProvider({ children }) {
         if (!getToken()) {
             return;
         }
+        // Ignore a late response if the effect was cleaned up (e.g. a fresh login happened).
+        let ignore = false;
         api('/auth/me')
-            .then((data) => setUser(data.user))
-            .catch(() => setToken(null))
-            .finally(() => setLoading(false));
+            .then((data) => {
+                if (!ignore) setUser(data.user);
+            })
+            .catch((err) => {
+                // Only an invalid token logs out; a network/server error keeps it.
+                if (err.status === 401) setToken(null);
+            })
+            .finally(() => {
+                if (!ignore) setLoading(false);
+            });
+        return () => {
+            ignore = true;
+        };
+    }, []);
+
+    // api.js fires this event when the server answers 401 mid-session.
+    useEffect(() => {
+        function handleUnauthorized() {
+            setUser(null);
+        }
+        window.addEventListener("auth:unauthorized", handleUnauthorized);
+        return () => window.removeEventListener("auth:unauthorized", handleUnauthorized);
     }, []);
 
     async function login(email, password) {
         const data = await api("/auth/login", {
             method: "POST",
             body: { email, password },
+        });
+        setToken(data.token);
+        setUser(data.user);
+    }
+
+    async function register(name, email, password) {
+        const data = await api("/auth/register", {
+            method: "POST",
+            body: { name, email, password },
         });
         setToken(data.token);
         setUser(data.user);
@@ -34,6 +64,7 @@ export function AuthProvider({ children }) {
         user,
         loading,
         login,
+        register,
         logout,
         isAdmin: user?.role === "admin",
     };

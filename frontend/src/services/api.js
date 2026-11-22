@@ -39,8 +39,10 @@ export async function api(path, { method = 'GET', body } = {}) {
     const data = await res.json().catch(() => ({}));
 
     if (!res.ok) {
-        if (res.status === 401) {
+        // Only for a session that had a token (a failed login also returns 401).
+        if (res.status === 401 && token) {
             setToken(null);
+            window.dispatchEvent(new Event('auth:unauthorized'));
         }
         throw new ApiError(res.status, data.message || 'Error inesperado', data.errors);
     }

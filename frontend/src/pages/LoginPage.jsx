@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Navigate, useNavigate } from "react-router";
+import { Link, Navigate, useNavigate } from "react-router";
 import { useAuth } from "../hooks/useAuth.js";
 
 export default function LoginPage() {
@@ -72,6 +72,11 @@ export default function LoginPage() {
                 >
                     {submitting ? "Ingresando..." : "Ingresar"}
                 </button>
+
+                <p className="text-sm text-center">
+                    ¿No tenés cuenta?{" "}
+                    <Link to="/registro" className="text-blue-600 underline">Registrate</Link>
+                </p>
             </form>
         </div>
     );
