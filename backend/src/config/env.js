@@ -13,4 +13,8 @@ export const env = {
     mongodbUri: process.env.MONGODB_URI,
     jwtSecret: process.env.JWT_SECRET,
     jwtExpiresIn: process.env.JWT_EXPIRES_IN || '8h',
+    // Not a secret, so a development default is fine. Accepts a comma-separated list.
+    clientOrigin: (process.env.CLIENT_ORIGIN || 'http://localhost:5173')
+        .split(',')
+        .map((origin) => origin.trim()),
 };
