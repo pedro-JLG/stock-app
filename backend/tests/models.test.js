@@ -20,10 +20,15 @@ describe('Product model', () => {
     });
 
     test('fails with negative stock', async () => {
-        const product = new Product({ name: 'Screw', sku: 'sc01', category: 'Hardware', stock: -1 });
+        const product = new Product({
+            name: 'Screw',
+            sku: 'sc01',
+            category: 'Hardware',
+            stock: -1,
+        });
 
         const error = await product.validate().catch((e) => e);
-        expect(error.errors.stock).toBeDefined(); 
+        expect(error.errors.stock).toBeDefined();
     });
 });
 
@@ -37,12 +42,16 @@ describe('User model', () => {
     });
 
     test('rejects an unknown role', async () => {
-        const user = new User({ name: 'Ana', email: 'a@mail.com', passwordHash: 'hash', role: 'superAdmin'});
-        
+        const user = new User({
+            name: 'Ana',
+            email: 'a@mail.com',
+            passwordHash: 'hash',
+            role: 'superAdmin',
+        });
+
         const error = await user.validate().catch((e) => e);
         expect(error.errors.role).toBeDefined();
     });
-
 });
 
 describe('Movement model', () => {

@@ -27,7 +27,11 @@ describe('POST /api/movements', () => {
         const product = await createProduct(10);
 
         const res = await postMovement({
-            product: product._id, type: 'in', quantity: 5, occurredOn: today, supplier: 'ACME',
+            product: product._id,
+            type: 'in',
+            quantity: 5,
+            occurredOn: today,
+            supplier: 'ACME',
         });
 
         expect(res.status).toBe(201);
@@ -38,7 +42,11 @@ describe('POST /api/movements', () => {
         const product = await createProduct(10);
 
         const res = await postMovement({
-            product: product._id, type: 'out', quantity: 4, occurredOn: today, reason: 'Sale',
+            product: product._id,
+            type: 'out',
+            quantity: 4,
+            occurredOn: today,
+            reason: 'Sale',
         });
 
         expect(res.status).toBe(201);
@@ -49,7 +57,11 @@ describe('POST /api/movements', () => {
         const product = await createProduct(3);
 
         const res = await postMovement({
-            product: product._id, type: 'out', quantity: 5, occurredOn: today, reason: 'Sale',
+            product: product._id,
+            type: 'out',
+            quantity: 5,
+            occurredOn: today,
+            reason: 'Sale',
         });
         const after = await Product.findById(product._id);
 
@@ -61,7 +73,11 @@ describe('POST /api/movements', () => {
         const product = await createProduct(99990);
 
         const res = await postMovement({
-            product: product._id, type: 'in', quantity: 10, occurredOn: today, supplier: 'ACME',
+            product: product._id,
+            type: 'in',
+            quantity: 10,
+            occurredOn: today,
+            supplier: 'ACME',
         });
 
         expect(res.status).toBe(409);
@@ -70,7 +86,12 @@ describe('POST /api/movements', () => {
     test('requires supplier for incoming movements', async () => {
         const product = await createProduct();
 
-        const res = await postMovement({ product: product._id, type: 'in', quantity: 1, occurredOn: today });
+        const res = await postMovement({
+            product: product._id,
+            type: 'in',
+            quantity: 1,
+            occurredOn: today,
+        });
 
         expect(res.status).toBe(400);
     });
@@ -79,7 +100,11 @@ describe('POST /api/movements', () => {
         const product = await createProduct();
 
         const res = await postMovement({
-            product: product._id, type: 'in', quantity: 1, occurredOn: '2099-01-01', supplier: 'ACME',
+            product: product._id,
+            type: 'in',
+            quantity: 1,
+            occurredOn: '2099-01-01',
+            supplier: 'ACME',
         });
 
         expect(res.status).toBe(400);
@@ -99,11 +124,18 @@ describe('POST /api/movements', () => {
 
     test('returns 404 for an archived product', async () => {
         const product = await Product.create({
-            name: 'Old', sku: 'OLD-1', category: 'Hardware', deletedAt: new Date(),
+            name: 'Old',
+            sku: 'OLD-1',
+            category: 'Hardware',
+            deletedAt: new Date(),
         });
 
         const res = await postMovement({
-            product: product._id, type: 'in', quantity: 1, occurredOn: today, supplier: 'ACME',
+            product: product._id,
+            type: 'in',
+            quantity: 1,
+            occurredOn: today,
+            supplier: 'ACME',
         });
 
         expect(res.status).toBe(404);
@@ -114,8 +146,13 @@ describe('POST /api/movements', () => {
         const otherUser = new mongoose.Types.ObjectId();
 
         const res = await postMovement({
-            product: product._id, type: 'out', quantity: 1, occurredOn: today,
-            reason: 'Sale', supplier: 'ACME', user: otherUser,
+            product: product._id,
+            type: 'out',
+            quantity: 1,
+            occurredOn: today,
+            reason: 'Sale',
+            supplier: 'ACME',
+            user: otherUser,
         });
 
         expect(res.body.movement.user).toBe(operatorId.toString());
@@ -124,7 +161,13 @@ describe('POST /api/movements', () => {
 
     test('two simultaneous outgoing movements cannot overdraw stock', async () => {
         const product = await createProduct(10);
-        const body = { product: product._id, type: 'out', quantity: 8, occurredOn: today, reason: 'Sale' };
+        const body = {
+            product: product._id,
+            type: 'out',
+            quantity: 8,
+            occurredOn: today,
+            reason: 'Sale',
+        };
 
         const [first, second] = await Promise.all([postMovement(body), postMovement(body)]);
         const statuses = [first.status, second.status].sort();
@@ -141,12 +184,24 @@ describe('GET /api/movements', () => {
         const product = await createProduct(10);
         const userAuth = `Bearer ${generateToken(user)}`;
 
-        await request(app).post('/api/movements').set('Authorization', userAuth)
-            .send({ product: product._id, type: 'in', quantity: 1, occurredOn: today, supplier: 'ACME' });
-        await request(app).post('/api/movements').set('Authorization', userAuth)
-            .send({ product: product._id, type: 'out', quantity: 1, occurredOn: today, reason: 'Sale' });
+        await request(app).post('/api/movements').set('Authorization', userAuth).send({
+            product: product._id,
+            type: 'in',
+            quantity: 1,
+            occurredOn: today,
+            supplier: 'ACME',
+        });
+        await request(app).post('/api/movements').set('Authorization', userAuth).send({
+            product: product._id,
+            type: 'out',
+            quantity: 1,
+            occurredOn: today,
+            reason: 'Sale',
+        });
 
-        const res = await request(app).get('/api/movements?type=out').set('Authorization', userAuth);
+        const res = await request(app)
+            .get('/api/movements?type=out')
+            .set('Authorization', userAuth);
 
         expect(res.body.total).toBe(1);
         expect(res.body.items[0].product.name).toBe('Screw');
@@ -155,13 +210,38 @@ describe('GET /api/movements', () => {
 
     test('filters by product and date range', async () => {
         const first = await createProduct(10);
-        const second = await Product.create({ name: 'Nut', sku: 'NUT-1', category: 'Hardware', stock: 10 });
+        const second = await Product.create({
+            name: 'Nut',
+            sku: 'NUT-1',
+            category: 'Hardware',
+            stock: 10,
+        });
 
-        await postMovement({ product: first._id, type: 'in', quantity: 1, occurredOn: '2024-01-10', supplier: 'ACME' });
-        await postMovement({ product: first._id, type: 'in', quantity: 1, occurredOn: '2024-03-10', supplier: 'ACME' });
-        await postMovement({ product: second._id, type: 'in', quantity: 1, occurredOn: '2024-03-10', supplier: 'ACME' });
+        await postMovement({
+            product: first._id,
+            type: 'in',
+            quantity: 1,
+            occurredOn: '2024-01-10',
+            supplier: 'ACME',
+        });
+        await postMovement({
+            product: first._id,
+            type: 'in',
+            quantity: 1,
+            occurredOn: '2024-03-10',
+            supplier: 'ACME',
+        });
+        await postMovement({
+            product: second._id,
+            type: 'in',
+            quantity: 1,
+            occurredOn: '2024-03-10',
+            supplier: 'ACME',
+        });
 
-        const byProduct = await request(app).get(`/api/movements?product=${first._id}`).set('Authorization', auth);
+        const byProduct = await request(app)
+            .get(`/api/movements?product=${first._id}`)
+            .set('Authorization', auth);
         const byDate = await request(app)
             .get(`/api/movements?product=${first._id}&from=2024-02-01&to=2024-04-01`)
             .set('Authorization', auth);

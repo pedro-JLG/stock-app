@@ -3,7 +3,14 @@ import { requireAuth } from '../middlewares/requireAuth.js';
 import { requireRole } from '../middlewares/requireRole.js';
 import { validate } from '../middlewares/validate.js';
 import { listRules, idRules, createRules, updateRules } from '../validations/product.validation.js';
-import { list, show, create, update, archive, byCategory } from '../controllers/product.controller.js';
+import {
+    list,
+    show,
+    create,
+    update,
+    archive,
+    byCategory,
+} from '../controllers/product.controller.js';
 
 const router = Router();
 

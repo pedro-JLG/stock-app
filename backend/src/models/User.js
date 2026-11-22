@@ -32,15 +32,15 @@ const userSchema = new mongoose.Schema(
             default: 'operator',
         },
     },
-    {timestamps: true}
+    { timestamps: true },
 );
 
 userSchema.methods.setPassword = async function (password) {
     this.passwordHash = await bcrypt.hash(password, 10);
 };
 
-userSchema.methods.comparePassword = function (password){
+userSchema.methods.comparePassword = function (password) {
     return bcrypt.compare(password, this.passwordHash);
 };
 
-export const User = mongoose.model('User', userSchema)
+export const User = mongoose.model('User', userSchema);

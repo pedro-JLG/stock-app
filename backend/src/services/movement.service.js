@@ -19,11 +19,14 @@ export async function registerMovement(data, userId) {
     const product = await Product.findOneAndUpdate(
         { _id: productId, deletedAt: null, stock: stockCondition },
         { $inc: { stock: delta } },
-        { returnDocument: 'after' }
+        { returnDocument: 'after' },
     );
 
     if (!product) {
-        throw new HttpError(409, isIn ? `Se superaría el stock máximo de ${MAX_STOCK}` : 'Stock insuficiente');
+        throw new HttpError(
+            409,
+            isIn ? `Se superaría el stock máximo de ${MAX_STOCK}` : 'Stock insuficiente',
+        );
     }
 
     try {

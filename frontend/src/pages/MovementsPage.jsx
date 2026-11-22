@@ -1,14 +1,14 @@
-import { useState } from "react";
-import { useFetch } from "../hooks/useFetch.js";
-import Pagination from "../components/Pagination.jsx";
+import { useState } from 'react';
+import { useFetch } from '../hooks/useFetch.js';
+import Pagination from '../components/Pagination.jsx';
 
 const PAGE_SIZE = 15;
-const EMPTY_FILTERS = { type: "", product: "", from: "", to: "" };
+const EMPTY_FILTERS = { type: '', product: '', from: '', to: '' };
 
 // occurredOn is stored as UTC midnight, so we show it in UTC to avoid
 // displaying the previous day in timezones behind UTC (e.g. Argentina).
 function formatDate(value) {
-    return new Date(value).toLocaleDateString("es-AR", { timeZone: "UTC" });
+    return new Date(value).toLocaleDateString('es-AR', { timeZone: 'UTC' });
 }
 
 export default function MovementsPage() {
@@ -16,15 +16,15 @@ export default function MovementsPage() {
     const [page, setPage] = useState(1);
 
     const params = new URLSearchParams({ page, limit: PAGE_SIZE });
-    if (filters.type) params.set("type", filters.type);
-    if (filters.product) params.set("product", filters.product);
-    if (filters.from) params.set("from", filters.from);
+    if (filters.type) params.set('type', filters.type);
+    if (filters.product) params.set('product', filters.product);
+    if (filters.from) params.set('from', filters.from);
     // Include the whole "to" day (dates are stored at UTC midnight).
-    if (filters.to) params.set("to", `${filters.to}T23:59:59.999Z`);
+    if (filters.to) params.set('to', `${filters.to}T23:59:59.999Z`);
 
     const movements = useFetch(`/movements?${params}`);
     // Only the first 100 products are loaded for the filter (backend max per page).
-    const products = useFetch("/products?limit=100");
+    const products = useFetch('/products?limit=100');
 
     function handleFilterChange(e) {
         setFilters({ ...filters, [e.target.name]: e.target.value });
@@ -42,7 +42,9 @@ export default function MovementsPage() {
 
             <div className="flex flex-wrap items-end gap-3 bg-white p-4 rounded shadow">
                 <div>
-                    <label htmlFor="type" className="block text-sm font-medium">Tipo</label>
+                    <label htmlFor="type" className="block text-sm font-medium">
+                        Tipo
+                    </label>
                     <select
                         id="type"
                         name="type"
@@ -56,7 +58,9 @@ export default function MovementsPage() {
                     </select>
                 </div>
                 <div>
-                    <label htmlFor="product" className="block text-sm font-medium">Producto</label>
+                    <label htmlFor="product" className="block text-sm font-medium">
+                        Producto
+                    </label>
                     <select
                         id="product"
                         name="product"
@@ -66,12 +70,16 @@ export default function MovementsPage() {
                     >
                         <option value="">Todos</option>
                         {products.data?.items.map((p) => (
-                            <option key={p._id} value={p._id}>{p.name} ({p.sku})</option>
+                            <option key={p._id} value={p._id}>
+                                {p.name} ({p.sku})
+                            </option>
                         ))}
                     </select>
                 </div>
                 <div>
-                    <label htmlFor="from" className="block text-sm font-medium">Desde</label>
+                    <label htmlFor="from" className="block text-sm font-medium">
+                        Desde
+                    </label>
                     <input
                         id="from"
                         name="from"
@@ -82,7 +90,9 @@ export default function MovementsPage() {
                     />
                 </div>
                 <div>
-                    <label htmlFor="to" className="block text-sm font-medium">Hasta</label>
+                    <label htmlFor="to" className="block text-sm font-medium">
+                        Hasta
+                    </label>
                     <input
                         id="to"
                         name="to"
@@ -92,11 +102,7 @@ export default function MovementsPage() {
                         className="mt-1 border rounded px-3 py-2"
                     />
                 </div>
-                <button
-                    type="button"
-                    onClick={clearFilters}
-                    className="px-3 py-2 border rounded"
-                >
+                <button type="button" onClick={clearFilters} className="px-3 py-2 border rounded">
                     Limpiar filtros
                 </button>
             </div>
@@ -130,20 +136,22 @@ export default function MovementsPage() {
                                 <tbody>
                                     {movements.data.items.map((m) => (
                                         <tr key={m._id} className="border-t">
-                                            <td className="px-4 py-2">{formatDate(m.occurredOn)}</td>
                                             <td className="px-4 py-2">
-                                                {m.type === "in" ? "Ingreso" : "Salida"}
+                                                {formatDate(m.occurredOn)}
+                                            </td>
+                                            <td className="px-4 py-2">
+                                                {m.type === 'in' ? 'Ingreso' : 'Salida'}
                                             </td>
                                             <td className="px-4 py-2">
                                                 {m.product
                                                     ? `${m.product.name} (${m.product.sku})`
-                                                    : "Producto eliminado"}
+                                                    : 'Producto eliminado'}
                                             </td>
                                             <td className="px-4 py-2 text-right">{m.quantity}</td>
                                             <td className="px-4 py-2">
-                                                {m.type === "in" ? m.supplier : m.reason}
+                                                {m.type === 'in' ? m.supplier : m.reason}
                                             </td>
-                                            <td className="px-4 py-2">{m.user?.name ?? "-"}</td>
+                                            <td className="px-4 py-2">{m.user?.name ?? '-'}</td>
                                         </tr>
                                     ))}
                                 </tbody>

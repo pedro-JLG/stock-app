@@ -23,7 +23,10 @@ describe('permissions', () => {
 
     test('operator can list but cannot create', async () => {
         const list = await request(app).get('/api/products').set('Authorization', operator);
-        const create = await request(app).post('/api/products').set('Authorization', operator).send(screw);
+        const create = await request(app)
+            .post('/api/products')
+            .set('Authorization', operator)
+            .send(screw);
 
         expect(list.status).toBe(200);
         expect(create.status).toBe(403);
@@ -32,7 +35,10 @@ describe('permissions', () => {
 
 describe('POST /api/products', () => {
     test('admin creates a product with uppercase sku and zero stock', async () => {
-        const res = await request(app).post('/api/products').set('Authorization', admin).send(screw);
+        const res = await request(app)
+            .post('/api/products')
+            .set('Authorization', admin)
+            .send(screw);
 
         expect(res.status).toBe(201);
         expect(res.body.sku).toBe('SCR-05');
@@ -75,14 +81,18 @@ describe('GET /api/products', () => {
     });
 
     test('filters by category', async () => {
-        const res = await request(app).get('/api/products?category=Electric').set('Authorization', operator);
+        const res = await request(app)
+            .get('/api/products?category=Electric')
+            .set('Authorization', operator);
 
         expect(res.body.items).toHaveLength(1);
         expect(res.body.items[0].sku).toBe('CAB-02');
     });
 
     test('paginates results', async () => {
-        const res = await request(app).get('/api/products?limit=2&page=2').set('Authorization', operator);
+        const res = await request(app)
+            .get('/api/products?limit=2&page=2')
+            .set('Authorization', operator);
 
         expect(res.body.items).toHaveLength(1);
         expect(res.body.pages).toBe(2);
@@ -91,7 +101,9 @@ describe('GET /api/products', () => {
 
 describe('GET /api/products/:id', () => {
     test('rejects an invalid id', async () => {
-        const res = await request(app).get('/api/products/not-an-id').set('Authorization', operator);
+        const res = await request(app)
+            .get('/api/products/not-an-id')
+            .set('Authorization', operator);
         expect(res.status).toBe(400);
     });
 
@@ -106,7 +118,9 @@ describe('DELETE /api/products/:id', () => {
     test('archives a product without stock and hides it from the list', async () => {
         const product = await Product.create(screw);
 
-        const res = await request(app).delete(`/api/products/${product._id}`).set('Authorization', admin);
+        const res = await request(app)
+            .delete(`/api/products/${product._id}`)
+            .set('Authorization', admin);
         const list = await request(app).get('/api/products').set('Authorization', admin);
 
         expect(res.status).toBe(204);
@@ -116,7 +130,9 @@ describe('DELETE /api/products/:id', () => {
     test('refuses to archive a product with stock', async () => {
         const product = await Product.create({ ...screw, stock: 10 });
 
-        const res = await request(app).delete(`/api/products/${product._id}`).set('Authorization', admin);
+        const res = await request(app)
+            .delete(`/api/products/${product._id}`)
+            .set('Authorization', admin);
 
         expect(res.status).toBe(409);
     });
@@ -130,7 +146,9 @@ describe('GET /api/products/stock-by-category', () => {
             { name: 'C', sku: 'C1', category: 'Electric', stock: 3 },
         ]);
 
-        const res = await request(app).get('/api/products/stock-by-category').set('Authorization', operator);
+        const res = await request(app)
+            .get('/api/products/stock-by-category')
+            .set('Authorization', operator);
 
         expect(res.body).toEqual([
             { category: 'Electric', totalStock: 3, products: 1 },

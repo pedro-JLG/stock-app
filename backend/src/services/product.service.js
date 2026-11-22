@@ -19,7 +19,10 @@ export async function listProducts({ q, category, page = 1, limit = 12 }) {
     }
 
     const [items, total] = await Promise.all([
-        Product.find(filter).sort({ name: 1 }).skip((page - 1) * limit).limit(limit),
+        Product.find(filter)
+            .sort({ name: 1 })
+            .skip((page - 1) * limit)
+            .limit(limit),
         Product.countDocuments(filter),
     ]);
 

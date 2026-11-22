@@ -43,7 +43,7 @@ const movementSchema = new mongoose.Schema(
             trim: true,
             maxlength: [120, 'El proveedor no puede superar los 120 caracteres'],
             required: [
-                function() {
+                function () {
                     return this.type === 'in';
                 },
                 'El proveedor es obligatorio para los ingresos',
@@ -54,14 +54,14 @@ const movementSchema = new mongoose.Schema(
             trim: true,
             maxlength: [180, 'El motivo no puede superar los 180 caracteres'],
             required: [
-                function() {
+                function () {
                     return this.type === 'out';
                 },
                 'El motivo es obligatorio para los egresos',
             ],
         },
     },
-    { timestamps: true}
+    { timestamps: true },
 );
 
 export const Movement = mongoose.model('Movement', movementSchema);

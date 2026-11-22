@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
-import { api, getToken, setToken } from "../services/api.js";
-import { AuthContext } from "./authContext.js";
+import { useEffect, useState } from 'react';
+import { api, getToken, setToken } from '../services/api.js';
+import { AuthContext } from './authContext.js';
 
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
@@ -33,13 +33,13 @@ export function AuthProvider({ children }) {
         function handleUnauthorized() {
             setUser(null);
         }
-        window.addEventListener("auth:unauthorized", handleUnauthorized);
-        return () => window.removeEventListener("auth:unauthorized", handleUnauthorized);
+        window.addEventListener('auth:unauthorized', handleUnauthorized);
+        return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
     }, []);
 
     async function login(email, password) {
-        const data = await api("/auth/login", {
-            method: "POST",
+        const data = await api('/auth/login', {
+            method: 'POST',
             body: { email, password },
         });
         setToken(data.token);
@@ -47,8 +47,8 @@ export function AuthProvider({ children }) {
     }
 
     async function register(name, email, password) {
-        const data = await api("/auth/register", {
-            method: "POST",
+        const data = await api('/auth/register', {
+            method: 'POST',
             body: { name, email, password },
         });
         setToken(data.token);
@@ -66,7 +66,7 @@ export function AuthProvider({ children }) {
         login,
         register,
         logout,
-        isAdmin: user?.role === "admin",
+        isAdmin: user?.role === 'admin',
     };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

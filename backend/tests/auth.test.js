@@ -25,7 +25,9 @@ describe('POST /api/auth/register', () => {
     });
 
     test('ignores a role sent in the body', async () => {
-        const res = await request(app).post('/api/auth/register').send({ ...ana, role: 'admin' });
+        const res = await request(app)
+            .post('/api/auth/register')
+            .send({ ...ana, role: 'admin' });
 
         expect(res.body.user.role).toBe('operator');
     });
@@ -91,7 +93,9 @@ describe('GET /api/auth/me', () => {
 
 describe('requireRole', () => {
     const testApp = express();
-    testApp.get('/admin-only', requireAuth, requireRole('admin'), (req, res) => res.json({ ok: true }));
+    testApp.get('/admin-only', requireAuth, requireRole('admin'), (req, res) =>
+        res.json({ ok: true }),
+    );
     testApp.use(errorHandler);
 
     const tokenFor = (role) => generateToken({ _id: new mongoose.Types.ObjectId(), role });

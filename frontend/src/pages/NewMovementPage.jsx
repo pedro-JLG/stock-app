@@ -1,34 +1,34 @@
-import { useState } from "react";
-import { useFetch } from "../hooks/useFetch.js";
-import { api } from "../services/api.js";
-import FieldError from "../components/FieldError.jsx";
-import { toFieldErrors } from "../utils/apiErrors.js";
+import { useState } from 'react';
+import { useFetch } from '../hooks/useFetch.js';
+import { api } from '../services/api.js';
+import FieldError from '../components/FieldError.jsx';
+import { toFieldErrors } from '../utils/apiErrors.js';
 
 // Local date as YYYY-MM-DD (toISOString would give the UTC date).
 function todayLocal() {
     const now = new Date();
-    const month = String(now.getMonth() + 1).padStart(2, "0");
-    const day = String(now.getDate()).padStart(2, "0");
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
     return `${now.getFullYear()}-${month}-${day}`;
 }
 
 function emptyForm() {
     return {
-        product: "",
-        type: "in",
-        quantity: "",
+        product: '',
+        type: 'in',
+        quantity: '',
         occurredOn: todayLocal(),
-        supplier: "",
-        reason: "",
+        supplier: '',
+        reason: '',
     };
 }
 
 export default function NewMovementPage() {
     // Only the first 100 products are loaded for the selector (backend max per page).
-    const products = useFetch("/products?limit=100");
+    const products = useFetch('/products?limit=100');
 
     const [form, setForm] = useState(emptyForm);
-    const [error, setError] = useState("");
+    const [error, setError] = useState('');
     const [fieldErrors, setFieldErrors] = useState({});
     const [result, setResult] = useState(null);
     const [submitting, setSubmitting] = useState(false);
@@ -39,7 +39,7 @@ export default function NewMovementPage() {
 
     async function handleSubmit(e) {
         e.preventDefault();
-        setError("");
+        setError('');
         setFieldErrors({});
         setResult(null);
         setSubmitting(true);
@@ -50,14 +50,14 @@ export default function NewMovementPage() {
             quantity: Number(form.quantity),
             occurredOn: form.occurredOn,
         };
-        if (form.type === "in") {
+        if (form.type === 'in') {
             body.supplier = form.supplier;
         } else {
             body.reason = form.reason;
         }
 
         try {
-            const data = await api("/movements", { method: "POST", body });
+            const data = await api('/movements', { method: 'POST', body });
             const product = products.data.items.find((p) => p._id === form.product);
             setResult({ name: product?.name, stock: data.stock });
             setForm(emptyForm());
@@ -65,7 +65,7 @@ export default function NewMovementPage() {
         } catch (err) {
             const fields = toFieldErrors(err);
             setFieldErrors(fields);
-            setError(Object.keys(fields).length > 0 ? "" : err.message);
+            setError(Object.keys(fields).length > 0 ? '' : err.message);
             // Refresh the stock shown in the selector (e.g. after a 409 for insufficient stock).
             products.reload();
         } finally {
@@ -91,18 +91,21 @@ export default function NewMovementPage() {
             )}
 
             {products.data && products.data.items.length > 0 && (
-                <form onSubmit={handleSubmit} className="max-w-lg bg-white p-6 rounded shadow space-y-4">
+                <form
+                    onSubmit={handleSubmit}
+                    className="max-w-lg bg-white p-6 rounded shadow space-y-4"
+                >
                     {result && (
                         <p className="text-sm text-green-700 bg-green-50 p-2 rounded">
                             Movimiento registrado. Stock actual de {result.name}: {result.stock}
                         </p>
                     )}
-                    {error && (
-                        <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{error}</p>
-                    )}
+                    {error && <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{error}</p>}
 
                     <div>
-                        <label htmlFor="product" className="block text-sm font-medium">Producto</label>
+                        <label htmlFor="product" className="block text-sm font-medium">
+                            Producto
+                        </label>
                         <select
                             id="product"
                             name="product"
@@ -122,7 +125,9 @@ export default function NewMovementPage() {
                     </div>
 
                     <div>
-                        <label htmlFor="type" className="block text-sm font-medium">Tipo</label>
+                        <label htmlFor="type" className="block text-sm font-medium">
+                            Tipo
+                        </label>
                         <select
                             id="type"
                             name="type"
@@ -137,7 +142,9 @@ export default function NewMovementPage() {
                     </div>
 
                     <div>
-                        <label htmlFor="quantity" className="block text-sm font-medium">Cantidad</label>
+                        <label htmlFor="quantity" className="block text-sm font-medium">
+                            Cantidad
+                        </label>
                         <input
                             id="quantity"
                             name="quantity"
@@ -154,7 +161,9 @@ export default function NewMovementPage() {
                     </div>
 
                     <div>
-                        <label htmlFor="occurredOn" className="block text-sm font-medium">Fecha</label>
+                        <label htmlFor="occurredOn" className="block text-sm font-medium">
+                            Fecha
+                        </label>
                         <input
                             id="occurredOn"
                             name="occurredOn"
@@ -168,9 +177,11 @@ export default function NewMovementPage() {
                         <FieldError message={fieldErrors.occurredOn} />
                     </div>
 
-                    {form.type === "in" ? (
+                    {form.type === 'in' ? (
                         <div>
-                            <label htmlFor="supplier" className="block text-sm font-medium">Proveedor</label>
+                            <label htmlFor="supplier" className="block text-sm font-medium">
+                                Proveedor
+                            </label>
                             <input
                                 id="supplier"
                                 name="supplier"
@@ -184,7 +195,9 @@ export default function NewMovementPage() {
                         </div>
                     ) : (
                         <div>
-                            <label htmlFor="reason" className="block text-sm font-medium">Motivo</label>
+                            <label htmlFor="reason" className="block text-sm font-medium">
+                                Motivo
+                            </label>
                             <input
                                 id="reason"
                                 name="reason"
@@ -203,7 +216,7 @@ export default function NewMovementPage() {
                         disabled={submitting}
                         className="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50"
                     >
-                        {submitting ? "Registrando..." : "Registrar"}
+                        {submitting ? 'Registrando...' : 'Registrar'}
                     </button>
                 </form>
             )}

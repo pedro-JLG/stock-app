@@ -1,14 +1,14 @@
-import { useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router";
-import { useAuth } from "../hooks/useAuth.js";
+import { useState } from 'react';
+import { Link, Navigate, useNavigate } from 'react-router';
+import { useAuth } from '../hooks/useAuth.js';
 
 export default function LoginPage() {
     const { user, login } = useAuth();
     const navigate = useNavigate();
 
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [error, setError] = useState("");
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
     const [submitting, setSubmitting] = useState(false);
 
     if (user) {
@@ -17,11 +17,11 @@ export default function LoginPage() {
 
     async function handleSubmit(e) {
         e.preventDefault();
-        setError("");
+        setError('');
         setSubmitting(true);
         try {
             await login(email, password);
-            navigate("/", { replace: true });
+            navigate('/', { replace: true });
         } catch (err) {
             setError(err.message);
         } finally {
@@ -37,12 +37,12 @@ export default function LoginPage() {
             >
                 <h1 className="text-2xl font-bold">Iniciar sesión</h1>
 
-                {error && (
-                    <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{error}</p>
-                )}
+                {error && <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{error}</p>}
 
                 <div>
-                    <label htmlFor="email" className="block text-sm font-medium">Email</label>
+                    <label htmlFor="email" className="block text-sm font-medium">
+                        Email
+                    </label>
                     <input
                         id="email"
                         type="email"
@@ -54,7 +54,9 @@ export default function LoginPage() {
                 </div>
 
                 <div>
-                    <label htmlFor="password" className="block text-sm font-medium">Contraseña</label>
+                    <label htmlFor="password" className="block text-sm font-medium">
+                        Contraseña
+                    </label>
                     <input
                         id="password"
                         type="password"
@@ -70,12 +72,14 @@ export default function LoginPage() {
                     disabled={submitting}
                     className="w-full bg-blue-600 text-white py-2 rounded disabled:opacity-50"
                 >
-                    {submitting ? "Ingresando..." : "Ingresar"}
+                    {submitting ? 'Ingresando...' : 'Ingresar'}
                 </button>
 
                 <p className="text-sm text-center">
-                    ¿No tenés cuenta?{" "}
-                    <Link to="/registro" className="text-blue-600 underline">Registrate</Link>
+                    ¿No tenés cuenta?{' '}
+                    <Link to="/registro" className="text-blue-600 underline">
+                        Registrate
+                    </Link>
                 </p>
             </form>
         </div>

@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router";
-import { useAuth } from "../hooks/useAuth.js";
-import { useFetch } from "../hooks/useFetch.js";
-import { api } from "../services/api.js";
-import Pagination from "../components/Pagination.jsx";
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router';
+import { useAuth } from '../hooks/useAuth.js';
+import { useFetch } from '../hooks/useFetch.js';
+import { api } from '../services/api.js';
+import Pagination from '../components/Pagination.jsx';
 
 const POLLING_MS = 15000;
 const PAGE_SIZE = 10;
@@ -11,18 +11,18 @@ const PAGE_SIZE = 10;
 export default function StockPage() {
     const { isAdmin } = useAuth();
 
-    const [search, setSearch] = useState("");
-    const [q, setQ] = useState("");
-    const [category, setCategory] = useState("");
+    const [search, setSearch] = useState('');
+    const [q, setQ] = useState('');
+    const [category, setCategory] = useState('');
     const [page, setPage] = useState(1);
-    const [actionError, setActionError] = useState("");
+    const [actionError, setActionError] = useState('');
 
     const params = new URLSearchParams({ page, limit: PAGE_SIZE });
-    if (q) params.set("q", q);
-    if (category) params.set("category", category);
+    if (q) params.set('q', q);
+    if (category) params.set('category', category);
 
     const products = useFetch(`/products?${params}`);
-    const categories = useFetch("/products/stock-by-category");
+    const categories = useFetch('/products/stock-by-category');
 
     const reloadProducts = products.reload;
     const reloadCategories = categories.reload;
@@ -51,9 +51,9 @@ export default function StockPage() {
         if (!window.confirm(`¿Archivar el producto "${product.name}"?`)) {
             return;
         }
-        setActionError("");
+        setActionError('');
         try {
-            await api(`/products/${product._id}`, { method: "DELETE" });
+            await api(`/products/${product._id}`, { method: 'DELETE' });
             if (products.data.items.length === 1 && page > 1) {
                 setPage(page - 1);
             }
@@ -118,7 +118,9 @@ export default function StockPage() {
                         <option value={category}>{category}</option>
                     )}
                     {categoryList.map((c) => (
-                        <option key={c.category} value={c.category}>{c.category}</option>
+                        <option key={c.category} value={c.category}>
+                            {c.category}
+                        </option>
                     ))}
                 </select>
                 <button type="submit" className="bg-slate-800 text-white px-4 py-2 rounded">
@@ -152,7 +154,9 @@ export default function StockPage() {
                                         <th className="px-4 py-2">Nombre</th>
                                         <th className="px-4 py-2">Categoría</th>
                                         <th className="px-4 py-2 text-right">Stock</th>
-                                        {isAdmin && <th className="px-4 py-2 text-right">Acciones</th>}
+                                        {isAdmin && (
+                                            <th className="px-4 py-2 text-right">Acciones</th>
+                                        )}
                                     </tr>
                                 </thead>
                                 <tbody>
