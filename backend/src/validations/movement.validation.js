@@ -10,7 +10,11 @@ export const createMovementRules = [
     body('occurredOn')
         .isISO8601({ strict: true }).withMessage('Fecha inválida')
         .bail()
-        .custom((value) => new Date(value) <= new Date()).withMessage('La fecha no puede ser futura'),
+        // Strict rule. The frontend sends date-only values (YYYY-MM-DD), parsed as UTC midnight.
+        // For users west of UTC (e.g. Argentina, UTC-3) their local "today" is never ahead of
+        // the server's now, so a valid "today" is never rejected.
+        .custom((value) => new Date(value) <= new Date())
+        .withMessage('La fecha no puede ser futura'),
     body('supplier')
         .if(body('type').equals('in'))
         .trim().notEmpty().withMessage('El proveedor es obligatorio en los ingresos')
