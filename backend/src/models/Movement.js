@@ -17,44 +17,47 @@ const movementSchema = new mongoose.Schema(
         },
         type: {
             type: String,
-            enum: MOVEMENT_TYPES,
-            required: [true, 'Type is required'],
+            enum: {
+                values: MOVEMENT_TYPES,
+                message: 'El tipo debe ser in u out',
+            },
+            required: [true, 'El tipo es obligatorio'],
         },
         quantity: {
             type: Number,
-            required: [true, 'Quantity is required'],
-            min: 1,
-            max: 99999,
+            required: [true, 'La cantidad es obligatoria'],
+            min: [1, 'La cantidad debe ser al menos 1'],
+            max: [99999, 'La cantidad no puede superar 99999'],
             validate: {
                 validator: Number.isInteger,
-                message: 'Quantity must be an integer',
+                message: 'La cantidad debe ser un número entero',
             },
         },
         occurredOn: {
             type: Date,
-            required: [true, 'Date is required'],
+            required: [true, 'La fecha es obligatoria'],
             index: true,
         },
         supplier: {
             type: String,
             trim: true,
-            maxlength: 120,
+            maxlength: [120, 'El proveedor no puede superar los 120 caracteres'],
             required: [
                 function() {
                     return this.type === 'in';
                 },
-                'Supplier is required for incoming movements',
+                'El proveedor es obligatorio para los ingresos',
             ],
         },
         reason: {
             type: String,
             trim: true,
-            maxlength: 180,
+            maxlength: [180, 'El motivo no puede superar los 180 caracteres'],
             required: [
                 function() {
                     return this.type === 'out';
                 },
-                'Reason is required for outgoing movements',
+                'El motivo es obligatorio para los egresos',
             ],
         },
     },

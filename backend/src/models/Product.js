@@ -4,9 +4,9 @@ const productSchema = new mongoose.Schema(
     {
         name: {
             type: String,
-            required: [true, 'Name is required'],
+            required: [true, 'El nombre es obligatorio'],
             trim: true,
-            maxlength: 120,
+            maxlength: [120, 'El nombre no puede superar los 120 caracteres'],
         },
         description: {
             type: String,
@@ -15,24 +15,24 @@ const productSchema = new mongoose.Schema(
         },
         sku: {
             type: String,
-            required: [true, 'SKU is required'],
+            required: [true, 'El SKU es obligatorio'],
             unique: true,
             trim: true,
             uppercase: true,
-            maxlength: 40,
+            maxlength: [40, 'El SKU no puede superar los 40 caracteres'],
         },
         category: {
             type: String,
-            required: [true, 'Category is required'],
+            required: [true, 'La categoría es obligatoria'],
             trim: true,
-            maxlength: 80,
+            maxlength: [80, 'La categoría no puede superar los 80 caracteres'],
             index: true,
         },
         stock: {
             type: Number,
             default: 0,
-            min: 0,
-            max: 99999,
+            min: [0, 'El stock no puede ser negativo'],
+            max: [99999, 'El stock no puede superar 99999'],
         },
         deletedAt: {
             type: Date,

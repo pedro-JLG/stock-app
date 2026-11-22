@@ -7,13 +7,13 @@ const userSchema = new mongoose.Schema(
     {
         name: {
             type: String,
-            required: [true, 'Name is required'],
+            required: [true, 'El nombre es obligatorio'],
             trim: true,
-            maxlength: 100,
+            maxlength: [100, 'El nombre no puede superar los 100 caracteres'],
         },
         email: {
             type: String,
-            required: [true, 'Email is required'],
+            required: [true, 'El email es obligatorio'],
             unique: true,
             trim: true,
             lowercase: true,
@@ -25,7 +25,10 @@ const userSchema = new mongoose.Schema(
         },
         role: {
             type: String,
-            enum: ROLES,
+            enum: {
+                values: ROLES,
+                message: 'El rol debe ser admin u operator',
+            },
             default: 'operator',
         },
     },
