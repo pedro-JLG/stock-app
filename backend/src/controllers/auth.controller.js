@@ -1,4 +1,4 @@
-import { registerUser, loginUser } from '../services/auth.service.js';
+import { registerUser, loginUser, getUserById } from '../services/auth.service.js';
 
 export async function register(req, res) {
     const result = await registerUser(req.body);
@@ -8,4 +8,9 @@ export async function register(req, res) {
 export async function login(req, res) {
     const result = await loginUser(req.body);
     res.json(result);
+}
+
+export async function me(req, res) {
+    const user = await getUserById(req.user.id);
+    res.json({ user });
 }

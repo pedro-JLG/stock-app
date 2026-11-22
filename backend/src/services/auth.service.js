@@ -28,8 +28,16 @@ export async function loginUser({ email, password }) {
     const user = await User.findOne({ email: email.toLowerCase() }).select('+passwordHash');
 
     if (!user || !(await user.comparePassword(password))) {
-        throw new HttpError(401, 'Datos de acceso invalido');
+        throw new HttpError(401, 'Datos de acceso inválidos');
     }
 
     return { user: toPublicUser(user), token: generateToken(user) };
+}
+
+export async function getUserById(id) {
+    const user = await User.findById(id);
+    if (!user) {
+        throw new HttpError(404, 'Usuario no encontrado');
+    }
+    return toPublicUser(user);
 }
